@@ -8,12 +8,12 @@
 
         <?php
 
-      
+
         if (isset($_GET['id'])) {
-      
+
             $id = $_GET['id'];
 
-         
+
             $sql = "SELECT * FROM tbl_order WHERE id=$id";
 
             $res = mysqli_query($conn, $sql);
@@ -21,23 +21,24 @@
             $count = mysqli_num_rows($res);
 
             if ($count == 1) {
-             
+
                 $row = mysqli_fetch_assoc($res);
 
                 $food = $row['food'];
                 $price = $row['price'];
                 $qty = $row['qty'];
                 $status = $row['status'];
+                $payment_status = $row['payment_status'];
                 $customer_name = $row['customer_name'];
                 $customer_contact = $row['customer_contact'];
                 $customer_email = $row['customer_email'];
                 $customer_address = $row['customer_address'];
             } else {
-             
+
                 header('location:' . SITEURL . 'admin/manage-order.php');
             }
         } else {
-        
+
             header('location:' . SITEURL . 'admin/manage-order.php');
         }
 
@@ -61,12 +62,13 @@
                 <tr>
                     <td>Qty</td>
                     <td>
-                        <input type="number" name="qty" value="<?php echo $qty; ?>">
+                        <input type="number" name="qty" value="<?php echo $qty; ?>" readonly>
                     </td>
+
                 </tr>
 
                 <tr>
-                    <td>Status</td>
+                    <td>DeliveryStatus</td>
                     <td>
                         <select name="status">
                             <option <?php if ($status == "Ordered") {
@@ -84,6 +86,24 @@
                         </select>
                     </td>
                 </tr>
+
+                <tr>
+                    <td>Payment Status</td>
+                    <td>
+                        <select name="payment_status">
+                            <option <?php if ($payment_status == "Cash on Delivery") {
+                                        echo "selected";
+                                    } ?> value="Cash on Delivery">Cash on Delivery</option>
+                            <option <?php if ($payment_status == "Paid") {
+                                        echo "selected";
+                                    } ?> value="Paid">Paid</option>
+                            <option <?php if ($payment_status == "Pending") {
+                                        echo "selected";
+                                    } ?> value="Pending">Pending</option>
+                        </select>
+                    </td>
+                </tr>
+
 
                 <tr>
                     <td>Customer Name: </td>
@@ -127,9 +147,9 @@
 
 
         <?php
-       
+
         if (isset($_POST['submit'])) {
-         
+
             $id = $_POST['id'];
             $price = $_POST['price'];
             $qty = $_POST['qty'];
@@ -143,7 +163,7 @@
             $customer_email = $_POST['customer_email'];
             $customer_address = $_POST['customer_address'];
 
-      
+
             $sql2 = "UPDATE tbl_order SET 
                     qty = $qty,
                     total = $total,
@@ -157,13 +177,13 @@
 
             $res2 = mysqli_query($conn, $sql2);
 
-            
+
             if ($res2 == true) {
-              
+
                 $_SESSION['update'] = "<div class='success'>Order Updated Successfully.</div>";
                 header('location:' . SITEURL . 'admin/manage-order.php');
             } else {
-              
+
                 $_SESSION['update'] = "<div class='error'>Failed to Update Order.</div>";
                 header('location:' . SITEURL . 'admin/manage-order.php');
             }

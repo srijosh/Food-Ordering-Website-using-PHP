@@ -22,10 +22,11 @@
                 <th>Qty.</th>
                 <th>Total</th>
                 <th>Order Date</th>
-                <th>Status</th>
+                <th>Delivery Status</th>
+                <th>Payment Status</th>
                 <th>Customer Name</th>
                 <th>Contact</th>
-                <th>Email</th>
+
                 <th>Address</th>
                 <th>Actions</th>
             </tr>
@@ -51,9 +52,9 @@
                     $total = $row['total'];
                     $order_date = $row['order_date'];
                     $status = $row['status'];
+                    $payment_status = $row['payment_status'];
                     $customer_name = $row['customer_name'];
                     $customer_contact = $row['customer_contact'];
-                    $customer_email = $row['customer_email'];
                     $customer_address = $row['customer_address'];
 
             ?>
@@ -66,7 +67,7 @@
                         <td data-label="Total"><?php echo $total; ?></td>
                         <td data-label="Order Date"><?php echo $order_date; ?></td>
 
-                        <td data-label="Status">
+                        <td data-label="Delivery Status">
                             <?php
 
 
@@ -81,10 +82,12 @@
                             }
                             ?>
                         </td>
-
+                        <td data-label="Payment Status">
+                            <?php echo $payment_status; ?>
+                        </td>
                         <td data-label="Customer Name"><?php echo $customer_name; ?></td>
                         <td data-label="Contact"><?php echo $customer_contact; ?></td>
-                        <td data-label="Email"><?php echo $customer_email; ?></td>
+
                         <td data-label="Address"><?php echo $customer_address; ?></td>
                         <td data-label="Actions">
                             <a href="<?php echo SITEURL; ?>admin/update-order.php?id=<?php echo $id; ?>" class="btn-secondary">Update</a>

@@ -30,6 +30,26 @@ if (isset($_GET['food_id'])) {
     // Redirect to home page
     header('location:' . SITEURL . '');
 }
+// Assuming user is logged in, track the view interaction
+if (isset($_SESSION['user'])) {
+    $username = $_SESSION['user']; // Assuming username is stored in session after login
+
+    // Fetch user_id using the username
+    $sql_user = "SELECT id FROM tbl_user WHERE username='$username'";
+    $res_user = mysqli_query($conn, $sql_user);
+
+    if ($res_user == true) {
+        $row_user = mysqli_fetch_assoc($res_user);
+        $user_id = $row_user['id'];
+        $food_id = $_GET['food_id']; // Get the food ID from the URL
+
+        // Insert the view interaction into the database
+        $sql_interaction = "INSERT INTO tbl_user_interactions (user_id, food_id, interaction_type) 
+                        VALUES ('$user_id', '$food_id', 'view')";
+        mysqli_query($conn, $sql_interaction);
+    }
+}
+
 ?>
 
 <!-- Food Details Section Starts Here -->
@@ -67,12 +87,142 @@ if (isset($_GET['food_id'])) {
             </div>
         </div>
 
+        <!-- recommendation section starts here -->
+        <div class="recom">
+            <h3>Recommendations</h3>
+
+            <?php
+            // Check if the user is logged in
+            if (isset($_SESSION['user'])) {
+                $username = $_SESSION['user'];
+
+                // Fetch user ID using username
+                $sql_user = "SELECT id FROM tbl_user WHERE username='$username'";
+                $res_user = mysqli_query($conn, $sql_user);
+
+                if ($res_user && mysqli_num_rows($res_user) > 0) {
+                    $row_user = mysqli_fetch_assoc($res_user);
+                    $user_id = $row_user['id'];
+
+                    // Fetch personalized recommendations based on user interactions
+                    $sql_recommendation = "
+                    SELECT 
+                        tbl_food.id, tbl_food.title, tbl_food.image_name, tbl_food.new_price, 
+                        COUNT(CASE WHEN tbl_user_interactions.interaction_type = 'view' THEN 1 ELSE NULL END) AS view_count,
+                        COUNT(CASE WHEN tbl_user_interactions.interaction_type = 'review' THEN 1 ELSE NULL END) AS review_count,
+                        COUNT(CASE WHEN tbl_user_interactions.interaction_type = 'cart' THEN 1 ELSE NULL END) AS cart_count,
+                        (SUM(CASE WHEN tbl_user_interactions.interaction_type = 'view' THEN 1 ELSE 0 END) +
+                        SUM(CASE WHEN tbl_user_interactions.interaction_type = 'review' THEN 2 ELSE 0 END) +
+                        SUM(CASE WHEN tbl_user_interactions.interaction_type = 'cart' THEN 3 ELSE 0 END)) AS score
+                    FROM tbl_food
+                    INNER JOIN tbl_user_interactions
+                    ON tbl_food.id = tbl_user_interactions.food_id
+                    WHERE tbl_user_interactions.user_id = '$user_id'
+                    GROUP BY tbl_food.id
+                    ORDER BY score DESC
+                    LIMIT 4";
+
+                    $res_recommendation = mysqli_query($conn, $sql_recommendation);
+
+                    if ($res_recommendation && mysqli_num_rows($res_recommendation) > 0) {
+                        echo "<div class='recommendations'>";
+                        echo "<h3>Recommended For You</h3>";
+                        while ($row = mysqli_fetch_assoc($res_recommendation)) {
+                            $food_id = $row['id'];
+                            $food_title = $row['title'];
+                            $food_image = $row['image_name'];
+                            $food_price = $row['new_price'];
+                            $view_count = $row['view_count'];
+                            $review_count = $row['review_count'];
+                            $cart_count = $row['cart_count'];
+
+
+                            echo "<div class='food-item'>";
+                            if ($food_image == "") {
+                                echo "<div class='error'>Image not available.</div>";
+                            } else {
+
+                                echo "  <img src='images/food/$food_image' alt='$title' class='img-responsive img-curve'> ";
+                            }
+                            echo "<div class='food-item-content'>";
+                            echo "<h4>$food_title</h4>";
+                            echo "<p>Price: Rs. $food_price</p>";
+                            echo "<p>Viewed: $view_count</p>";
+                            echo "<p>Reviewed: $review_count</p>";
+                            echo "<p>Added to Cart: $cart_count</p>";
+
+                            echo "<a href='food_info.php?food_id=$food_id' class='btn'>View Details</a>";
+                            echo "</div>";
+                            echo "</div>";
+                        }
+                        echo "</div>";
+                    }
+
+                    // Fetch globally popular items as fallback
+                    $sql_global_recommendation = "
+                    SELECT tbl_food.id, tbl_food.title, tbl_food.image_name, tbl_food.new_price, 
+                    COUNT(CASE WHEN tbl_user_interactions.interaction_type = 'view' THEN 1 ELSE NULL END) AS view_count,
+                    COUNT(CASE WHEN tbl_user_interactions.interaction_type = 'review' THEN 1 ELSE NULL END) AS review_count,
+                    COUNT(CASE WHEN tbl_user_interactions.interaction_type = 'cart' THEN 1 ELSE NULL END) AS cart_count,
+                    (SUM(CASE WHEN tbl_user_interactions.interaction_type = 'view' THEN 1 ELSE 0 END) +
+                    SUM(CASE WHEN tbl_user_interactions.interaction_type = 'review' THEN 2 ELSE 0 END) +
+                    SUM(CASE WHEN tbl_user_interactions.interaction_type = 'cart' THEN 3 ELSE 0 END)) AS score
+                    FROM tbl_food
+                    INNER JOIN tbl_user_interactions
+                    ON tbl_food.id = tbl_user_interactions.food_id
+                    GROUP BY tbl_food.id
+                    ORDER BY score DESC
+                    LIMIT 4";
+
+                    $res_global = mysqli_query($conn, $sql_global_recommendation);
+
+                    if ($res_global && mysqli_num_rows($res_global) > 0) {
+                        echo "<div class='recommendations'>";
+                        echo "<h3>Popular Items</h3>";
+                        while ($row = mysqli_fetch_assoc($res_global)) {
+                            $food_id = $row['id'];
+                            $food_title = $row['title'];
+                            $food_image = $row['image_name'];
+                            $food_price = $row['new_price'];
+                            $view_count = $row['view_count'];
+                            $review_count = $row['review_count'];
+                            $cart_count = $row['cart_count'];
+
+                            echo "<div class='food-item'>";
+                            if ($food_image == "") {
+                                echo "<div class='error'>Image not available.</div>";
+                            } else {
+
+                                echo "  <img src='images/food/$food_image' alt='$title' class='img-responsive img-curve'> ";
+                            }
+                            echo "<div class='food-item-content'>";
+                            echo "<h4>$food_title</h4>";
+                            echo "<p>Price: Rs. $food_price</p>";
+                            echo "<p>Viewed: $view_count</p>";
+                            echo "<p>Reviewed: $review_count</p>";
+                            echo "<p>Added to Cart: $cart_count</p>";
+                            echo "<a href='food_info.php?food_id=$food_id' class='btn'>View Details</a>";
+                            echo "</div>";
+                            echo "</div>";
+                        }
+                        echo "</div>";
+                    }
+                } else {
+                    echo "<div class='error'>Unable to fetch user details</div>";
+                }
+            } else {
+                echo "<div class='error'>Please <a href='login.php'>login</a> to see recommendations</div>";
+            }
+            ?>
+        </div>
+
         <!-- Reviews Section Starts Here -->
         <div class="reviews">
             <h3>Customer Reviews</h3>
             <br>
 
             <?php
+            $food_id = $_GET['food_id'];
             // Query to get reviews and calculate average rating
             $sql_reviews = "SELECT rating, description FROM tbl_ratings WHERE food_id=$food_id";
             $res_reviews = mysqli_query($conn, $sql_reviews);

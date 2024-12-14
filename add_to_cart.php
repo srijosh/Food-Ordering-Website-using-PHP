@@ -8,6 +8,19 @@ if (isset($_POST['add_to_cart'])) {
     $food_id = $_POST['food_id'];
     $quantity = 1; // default quantity
 
+    // Track user interaction
+    $username = $_SESSION['user']; // Assuming username is stored in session after login
+
+    // Fetch user_id using the username
+    $sql_user = "SELECT id FROM tbl_user WHERE username='$username'";
+    $res_user = mysqli_query($conn, $sql_user);
+
+    if ($res_user == true) {
+        $row_user = mysqli_fetch_assoc($res_user);
+        $user_id = $row_user['id'];
+        $sql_interaction = "INSERT INTO tbl_user_interactions (user_id, food_id, interaction_type) VALUES ('$user_id', '$food_id', 'cart')";
+        mysqli_query($conn, $sql_interaction);
+    }
     // Retrieve food details from the database
     $sql = "SELECT * FROM tbl_food WHERE id='$food_id'";
     $res = mysqli_query($conn, $sql);

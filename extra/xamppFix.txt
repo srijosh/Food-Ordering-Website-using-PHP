@@ -1,0 +1,13 @@
+My XAMPP Apache Ports changing automatically when I try to access Phpmyadmin
+
+:
+
+Try this, this method works on me
+
+The first step, you enter the xampp/mysql folder
+Rename the folder xampp/mysql/data to xampp/mysql/data_old
+Create a new folder xampp/mysql/data
+Copy all files in the xampp/mysql/backup folder into the xampp/mysql/data folder you just created
+Copy all existing database folders in the data_old into the data folder (except MySQL, performance_schema, and 6. phpMyAdmin folders) Then copy and replace the ibdata1 file in the data_old folder into the data folder
+return MySQL on XAMPP
+finish

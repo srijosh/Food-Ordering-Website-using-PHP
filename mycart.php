@@ -1,5 +1,6 @@
 <?php
 include('partials-front/menu.php');
+include('user-login-check.php');
 ?>
 
 <section class="cart">
@@ -10,65 +11,16 @@ include('partials-front/menu.php');
         if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
             $total = 0;
 
-            if (isset($_POST['submit'])) {
-                date_default_timezone_set('Asia/Kathmandu');
-                // Process the order here
-                $order_date = date("Y-m-d h:i:s"); // Order Date //i: A two-digit representation of the minutes (e.g., 05).
-                $status = "Ordered";  // Ordered, On Delivery, Delivered, Cancelled
-                $username = $_SESSION['user'];
+            if (isset($_POST['submit_order'])) {
+                // Preserve cart data for `payment.php` after submission
+                $_SESSION['order_data'] = [
+                    'order_date' => date("Y-m-d h:i:s"),
+                    'status' => 'Ordered',
+                    'username' => $_SESSION['user']
+                ];
 
-                // Retrieve customer details from the database
-                $sql_user = "SELECT * FROM tbl_user WHERE username='$username'";
-                $res_user = mysqli_query($conn, $sql_user);
-                $row_user = mysqli_fetch_assoc($res_user);
-
-                $customer_name = $row_user['full_name'];
-                $customer_contact = $row_user['contact'];
-                $customer_email = $row_user['email'];
-                $customer_address = $row_user['address'];
-
-                foreach ($_SESSION['cart'] as $item) {
-                    $food = $item['title'];
-                    $new_price = $item['new_price'];
-                    $qty = $item['quantity'];
-                    $total_item = $new_price * $qty; // total = price x qty 
-
-                    // Save the Order in Database
-                    // Create SQL to save the data
-                    $sql2 = "INSERT INTO tbl_order SET 
-                        food = '$food',
-                        price = $new_price,
-                        qty = $qty,
-                        total = $total_item,
-                        order_date = '$order_date',
-                        status = '$status',
-                        customer_name = '$customer_name',
-                        customer_contact = '$customer_contact',
-                        customer_email = '$customer_email',
-                        customer_address = '$customer_address'
-                    ";
-
-                    // Execute the Query
-                    $res2 = mysqli_query($conn, $sql2);
-
-                    // Check whether query executed successfully or not
-                    if ($res2 == true) {
-                        // Query Executed and Order Saved
-                        $_SESSION['order'] = "Food Ordered Successfully!";
-                    } else {
-                        // Failed to Save Order
-                        $_SESSION['order'] = "Failed to Order Food.";
-                    }
-                }
-
-                // Clear the cart after placing the order
-                unset($_SESSION['cart']);
-
-                // Remove the total price after placing the order to be shown in the navbar 
-                unset($_SESSION['total_price']);
-
-                // Redirect to home page after processing
-                header('location:' . SITEURL);
+                // Redirect to payment page
+                header('location: payment.php');
                 exit();
             }
         ?>
@@ -116,7 +68,7 @@ include('partials-front/menu.php');
             <div class="cart-summary">
                 <h3>Total: Rs. <?php echo $total; ?></h3>
                 <form action="" method="POST">
-                    <input type="submit" name="submit" value="Place Order" class="btn btn-primary">
+                    <input type="submit" name="submit_order" value="Proceed to Payment" class="btn btn-primary">
                 </form>
             </div>
         <?php
@@ -128,6 +80,3 @@ include('partials-front/menu.php');
 </section>
 
 <?php include('partials-front/footer.php'); ?>
-
-<!-- isset($_SESSION['cart']) is like asking, "Does the cart exist?"
-!empty($_SESSION['cart']) is like asking, "Does the cart have any items?" -->

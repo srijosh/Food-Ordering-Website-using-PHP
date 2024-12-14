@@ -32,7 +32,8 @@ $full_name = $row_user['full_name'];
                 <th>Qty.</th>
                 <th>Total</th>
                 <th>Order Date</th>
-                <th>Status</th>
+                <th>Delivery Status</th>
+                <th>Payment Status</th>
             </tr>
 
             <?php
@@ -55,6 +56,7 @@ $full_name = $row_user['full_name'];
                     $total = $row['total'];
                     $order_date = $row['order_date'];
                     $status = $row['status'];
+                    $payment_status = $row['payment_status'];
             ?>
 
                     <tr>
@@ -65,7 +67,7 @@ $full_name = $row_user['full_name'];
                         <td data-label="Total">Rs. <?php echo $total; ?></td>
                         <td data-label="Order Date"><?php echo $order_date; ?></td>
 
-                        <td data-label="Status">
+                        <td data-label="Delivery Status">
                             <?php
                             // Ordered, On Delivery, Delivered, Cancelled
                             if ($status == "Ordered") {
@@ -78,6 +80,9 @@ $full_name = $row_user['full_name'];
                                 echo "<label style='color: red;'>$status</label>";
                             }
                             ?>
+                        </td>
+                        <td data-label="Payment Status">
+                            <?php echo $payment_status; ?>
                         </td>
                     </tr>
 

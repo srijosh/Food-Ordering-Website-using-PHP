@@ -23,6 +23,8 @@ if (isset($_POST['submit'])) {
 
         if ($res == true) {
             $_SESSION['review'] = "Review added successfully!";
+            $sql_interaction = "INSERT INTO tbl_user_interactions (user_id, food_id, interaction_type) VALUES ('$user_id', '$food_id', 'review')";
+            mysqli_query($conn, $sql_interaction);
         } else {
             $_SESSION['review'] = "Failed to add review!";
         }
