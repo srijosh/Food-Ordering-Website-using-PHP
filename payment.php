@@ -42,15 +42,30 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                     </ul>
                     <p><strong>Total Amount:</strong> Rs. <?php echo $total; ?></p>
                 </div>
-                <form action="process-payment.php" method="POST">
-                    <label>
-                        <input type="radio" name="payment_method" value="Paid" required> Pay Now
-                    </label>
-                    <label>
-                        <input type="radio" name="payment_method" value="Cash on Delivery" required> Cash on Delivery
-                    </label>
-                    <input type="submit" name="submit_payment" value="Confirm Payment" class="btn btn-primary">
-                </form>
+                <div class="payment-list">
+                    <ul style="list-style-type: none;">
+                        <li>
+                            <form action="https://uat.esewa.com.np/epay/main" method="POST">
+                                <input value="<?php echo $total; ?>" name="tAmt" type="hidden">
+                                <input value="<?php echo $total; ?>" name="amt" type="hidden">
+                                <input value="0" name="txAmt" type="hidden">
+                                <input value="0" name="psc" type="hidden">
+                                <input value="0" name="pdc" type="hidden">
+                                <input value="epay_payment" name="scd" type="hidden">
+                                <input value="<?php echo rand(1, 1000) ?>" name="pid" type="hidden">
+                                <input value="http://localhost/food-order/epay-success.php" type="hidden" name="su">
+                                <input value="http://localhost/food-order/payment-failure.php" type="hidden" name="fu">
+                                <input type="submit" value="Pay With eSewa" class="btn-primary">
+                            </form>
+                        </li>
+                        <li>
+                            <form action="cashpay-success.php" method="POST">
+
+                                <input type="submit" name="submit_payment" value="Cash on Delivery" class="btn-primary">
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </section>
     </div>
